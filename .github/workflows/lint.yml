@@ -7,16 +7,17 @@ on:
     branches: [main]
 
 jobs:
-  build:
+  eslint:
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout Code
         uses: actions/checkout@v3
 
+      - name: Install ESLint
+        run: |
+          npm install eslint@latest eslint-plugin-html@latest -g
+          npm install eslint@latest --save-dev
+
       - name: Run ESLint Scan
-        uses: reviewdog/action-eslint@v1
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          reporter: github-pr-review
-          eslint_flags: ". --ext .js"
+        # Usamos npx para ejecutarlo directamente sobre el archivo
+        run: npx eslint content.js --env browser --env webextensions --rule 'semi: [error, always]' --rule 'quotes: [error, double]'
