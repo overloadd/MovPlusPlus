@@ -89,7 +89,11 @@
 				}
 				break;
 			case "KeyM":
+				e.preventDefault();
 				video.muted = !video.muted;
+				// Feedback dinámico basado en el estado real del hardware
+				showOSD(video.muted ? "🔇 SILENCIO" : "🔊 SONIDO ON");
+				break;
 		}
 	};
 
