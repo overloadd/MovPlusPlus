@@ -15,5 +15,5 @@ jobs:
 
       - name: Install and Run ESLint
         run: |
-          npm install eslint@latest
-          npx eslint content.js --env browser --env webextensions --rule 'semi: [error, always]' --rule 'quotes: [error, double]' --quiet
+          npm install eslint@latest globals @eslint/js
+          npx eslint content.js
