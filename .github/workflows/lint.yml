@@ -16,4 +16,4 @@ jobs:
       - name: Install and Run ESLint
         run: |
           npm install eslint@latest globals @eslint/js
-          npx eslint content.js
+          npx eslint content.js --config eslint.config.mjs

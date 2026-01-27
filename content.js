@@ -13,24 +13,24 @@
 
 	// --- MINI OSD (Encapsulado para evitar SES/Lockdown) ---
 	const showOSD = (() => {
-		const id = 'movistar-enhancer-osd';
+		const id = "movistar-enhancer-osd";
 		return (text) => {
 			let el = document.getElementById(id);
 			if (!el) {
-				el = document.createElement('div');
+				el = document.createElement("div");
 				el.id = id;
 				Object.assign(el.style, {
-					position: 'fixed', top: '10%', left: '50%', transform: 'translateX(-50%)',
-					background: 'rgba(0,0,0,0.8)', color: '#00ffed', padding: '12px 24px',
-					borderRadius: '30px', zIndex: '999999', pointerEvents: 'none',
-					fontFamily: 'sans-serif', fontWeight: 'bold', border: '1px solid #00ffed'
+					position: "fixed", top: "10%", left: "50%", transform: "translateX(-50%)",
+					background: "rgba(0,0,0,0.8)", color: "#00ffed", padding: "12px 24px",
+					borderRadius: "30px", zIndex: "999999", pointerEvents: "none",
+					fontFamily: "sans-serif", fontWeight: "bold", border: "1px solid #00ffed"
 				});
 				document.body.appendChild(el);
 			}
 			el.textContent = text;
-			el.style.opacity = '1';
+			el.style.opacity = "1";
 			clearTimeout(el.timer);
-			el.timer = setTimeout(() => el.style.opacity = '0', 1000);
+			el.timer = setTimeout(() => el.style.opacity = "0", 1000);
 		};
 	})();
 
@@ -41,7 +41,7 @@
 
 	const getVideo = () => {
 		for (const s of CONFIG.SELECTORS.video) {
-			const el = s.startsWith('#') ? document.getElementById(s.slice(1)) : document.querySelector(s);
+			const el = s.startsWith("#") ? document.getElementById(s.slice(1)) : document.querySelector(s);
 			if (el) return el;
 		}
 		return null;
