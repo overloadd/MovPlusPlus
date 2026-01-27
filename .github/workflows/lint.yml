@@ -13,11 +13,7 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v3
 
-      - name: Install ESLint
+      - name: Install and Run ESLint
         run: |
-          npm install eslint@latest eslint-plugin-html@latest -g
-          npm install eslint@latest --save-dev
-
-      - name: Run ESLint Scan
-        # Usamos npx para ejecutarlo directamente sobre el archivo
-        run: npx eslint content.js --env browser --env webextensions --rule 'semi: [error, always]' --rule 'quotes: [error, double]'
+          npm install eslint@latest
+          npx eslint content.js --env browser --env webextensions --rule 'semi: [error, always]' --rule 'quotes: [error, double]' --quiet
