@@ -1,0 +1,21 @@
+{
+    "manifest_version": 3,
+    "name": "Yomvi Player Keyboard Enhancer",
+    "version": "1.1.0",
+    "description": "Adds hardened, incompatibility-safe keyboard shortcuts to the Yomvi player.",
+    "content_scripts": [
+        {
+            "matches": [
+                "*://*.movistarplus.es/*",
+                "*://movistarplus.es/*"
+            ],
+            "js": ["content.js"],
+            "run_at": "document_start"
+        }
+    ],
+    "icons": {
+        "16": "icons/icon16.png",
+        "48": "icons/icon48.png",
+        "128": "icons/icon128.png"
+    }
+}
