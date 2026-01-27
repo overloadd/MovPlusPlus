@@ -83,4 +83,65 @@
 		}
 	};
 
-});
+	// --- Lógica de negociación ---
+	const Actions = {
+		playPause: (p, v) => {
+			const isPaused = v.paused;
+			if (isPaused) {
+				safe(() => p?.play?.()) || v.play();
+				OSD("▶ REPRODUCIR");
+			} else {
+				safe(() => p?.pause?.()) || v.pause();
+				OSD("⏸ PAUSA");
+			}
+		},
+		volume: (v, delta) => {
+			v.volume = Math.min(1, Math.max(0, v.volume + delta));
+			OSD(`🔊 VOL: ${Math.round(v.volume * 100)}%`);
+		},
+		seek: (p, v, delta) => {
+			const internal = delta > 0 ? p?.toolbar?._fastForward : p?.toolbar?._rewind;
+			if (internal) {
+				safe(() => internal());
+			} else if (v) {
+				v.currentTime += delta;
+			}
+			OSD(delta > 0 ? `⏩ +${delta}s` : `⏪ ${delta}s`);
+		},
+		mute: (v) => {
+			v.muted = !v.muted;
+			OSD(v.muted ? "🔇 SILENCIO" : "🔊 SONIDO");
+		}
+	};
+
+	// --- 6. Gestor de eventos ---
+	let lastActionTime = 0;
+	const keyHandler = (e) => {
+		// Bloqueo por spam o escritura
+		if (Date.now() - lastActionTime < CONFIG.THROTTLE_MS) return;
+		if (Context.isUserTyping()) return;
+		if (!document.documentElement.classList.contains("objetoPlayer")) return;
+		const p = Context.player;
+		const v = Context.video;
+		if (!v) return;
+		const keyMap = {
+			"Space":      () => { e.preventDefault(); e.stopImmediatePropagation(); Actions.playPause(p, v); },
+			"ArrowUp":    () => { e.preventDefault(); Actions.volume(v, CONFIG.VOL_STEP); },
+			"ArrowDown":  () => { e.preventDefault(); Actions.volume(v, -CONFIG.VOL_STEP); },
+			"ArrowRight": () => { e.preventDefault(); Actions.seek(p, v, CONFIG.SEEK_TIME); },
+			"ArrowLeft":  () => { e.preventDefault(); Actions.seek(p, v, -CONFIG.SEEK_TIME); },
+			"KeyM":       () => { e.preventDefault(); Actions.mute(v); },
+			"KeyF":       () => { e.preventDefault(); safe(() => p?.toggleFullScreen?.() || v.requestFullscreen()); }
+		};
+		if (keyMap[e.code]) {
+			keyMap[e.code]();
+			lastActionTime = Date.now();
+		}
+	};
+
+	// Inyeción en fase de capura para gara a los script de la wendung
+	document.addEventListener("keydown", keyHandler, true);
+	console.log("%c🚀 Movistar+ Enhancer Cargado", `color: ${CONFIG.COLORS.accent}; font-weight: bold;`);
+
+
+})();
