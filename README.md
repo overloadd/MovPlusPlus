@@ -41,7 +41,7 @@ Este proyecto es una herramienta de optimización personal. Para instalarla:
 
 1.  **Clona este repositorio:**
     ```bash
-    git clone [https://github.com/TU_USUARIO/movplus-plus.git](https://github.com/TU_USUARIO/movplus-plus.git)
+    git clone [https://github.com/overloadd/movplus-plus.git](https://github.com/overloadd/movplus-plus.git)
     ```
 2.  Abre Google Chrome y navega a `chrome://extensions/`.
 3.  Activa el interruptor **"Modo de desarrollador"** (arriba a la derecha).
@@ -62,5 +62,6 @@ En lugar de luchar contra el *Isolated World* de las extensiones, configuramos e
 ## Apoya el Proyecto
 
 Si esta extensión mejora tu experiencia diaria, considera invitarme a un café para mantener las actualizaciones:
+
 
 [![Donate with PayPal](https://img.shields.io/badge/Donate-PayPal-blue.svg?logo=paypal&style=for-the-badge)](https://www.paypal.com/donate/?hosted_button_id=BSBVZ96SC4HQU)
