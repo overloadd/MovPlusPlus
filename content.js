@@ -211,6 +211,5 @@
  * for (let i = 0 ; i < audioTracks.length ; i++){
  *     console.log(tracks[i].language);
  * };
- * TODO: Find the function to call that returns the audio tracks
- * TODO: Find the functions to call that returns subtitles
+ * TODO: Testear las nuevas fxs y modificar README.md para mostrarlas
  */
