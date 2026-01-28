@@ -1,72 +1,60 @@
-# Movistar+ Keyboard Controller 🚀
+# MovPlus++ 🚀 | Movistar+ Keyboard Controller
 
-![Version](https://img.shields.io/badge/version-1.0.0-blueviolet)
-![License](https://img.shields.io/badge/license-MIT-green)
-![Platform](https://img.shields.io/badge/platform-Chrome%20|%20Edge-blue)
+![Version](https://img.shields.io/badge/version-1.3.0-00ffed?style=flat-square)
+![Manifest](https://img.shields.io/badge/manifest-V3-blue?style=flat-square)
+![Environment](https://img.shields.io/badge/context-Main%20World-success?style=flat-square)
 
-**Estandarización de controles de accesibilidad para la plataforma Movistar Plus.**
-
-Esta extensión de Chrome tiene como objetivo unificar la experiencia de usuario en el reproductor de Movistar+, mapeando atajos de teclado universales (estilo YouTube/Netflix) para mejorar la productividad y la accesibilidad.
-
----
-
-## ✨ Características Principales
-
-* **🕹️ Control Universal:** Uso de `Espacio` para pausa/play y `Flechas` para volumen y tiempo.
-* **🛡️ Ingeniería Defensiva:** Implementación con **Shadow DOM** para evitar conflictos de CSS con la web original.
-* **📺 Feedback Visual (OSD):** Indicadores en pantalla dinámicos y minimalistas para confirmar acciones.
-* **⚡ Optimizado para Shaka Player:** Integración directa con la API de Shaka para el control de subtítulos y tracks.
+**Lleva la experiencia de usuario de Movistar+ al siguiente nivel.**
+Esta extensión de Chrome inyecta un controlador avanzado en el reproductor web de Movistar+, habilitando atajos de teclado universales, gestión de pistas de audio/subtítulos y feedback visual (OSD) en tiempo real.
 
 ---
 
-## ⌨️ Atajos de Teclado
+## ✨ Características Premium
 
-| Tecla | Acción |
-| :--- | :--- |
-| `Espacio` | Reproducir / Pausar |
-| `Flecha Derecha` | Avanzar 15 segundos |
-| `Flecha Izquierda` | Retroceder 15 segundos |
-| `Flecha Arriba` | Subir volumen (5%) |
-| `Flecha Abajo` | Bajar volumen (5%) |
-| `M` | Silenciar / Activar sonido |
-| `F` | Pantalla Completa |
-| `C` | Toggle de Subtítulos (Beta) |
+* **🕹️ Control Nativo:** Navegación por teclado estilo YouTube/Netflix (Espacio, Flechas, F, M).
+* **🎧 Gestión de Audio Inteligente:** Ciclo de pistas de audio con **corrección automática de ABR** (evita que el reproductor revierta el idioma por cambios de calidad).
+* **💬 Subtítulos Cíclicos:** Sistema rotativo inteligente: `OFF` ➔ `Idioma 1` ➔ `Idioma 2` ➔ `OFF`.
+* **👁️ OSD Cyberpunk:** Interfaz en pantalla (On-Screen Display) con estética neón (`#00ffed`) que confirma cada acción sin invadir el contenido.
+* **🛡️ Ingeniería "Main World":** Ejecución directa en el contexto principal para interactuar con la API `window.shakaPlayer` sin violar las políticas CSP (Content Security Policy).
+
+---
+
+## ⌨️ Mapa de Teclado
+
+| Tecla | Acción | Descripción Técnica |
+| :--- | :--- | :--- |
+| **`Espacio`** | Play / Pause | Controla el estado del motor de video HTML5. |
+| **`Flecha Derecha`** | +15 Segundos | Salto rápido (`currentTime + 15`). |
+| **`Flecha Izquierda`** | -15 Segundos | Rebobinado rápido (`currentTime - 15`). |
+| **`Flecha Arriba`** | Vol + 5% | Incremento logarítmico de volumen. |
+| **`Flecha Abajo`** | Vol - 5% | Decremento de volumen. |
+| **`L`** | Audio | **Cycle Track:** Cambia al siguiente idioma disponible. *Desactiva ABR temporalmente.* |
+| **`C`** | Subtítulos | **Cycle Subs:** Rota entre pistas de texto y estado apagado. |
+| **`M`** | Mute | Silenciar / Activar sonido (Toggle). |
+| **`F`** | Fullscreen | Pantalla completa inteligente (detecta contenedor `.objetoPlayer`). |
 
 ---
 
 ## 🛠️ Instalación (Modo Desarrollador)
 
-Como esta es una herramienta de optimización personal, puedes instalarla manualmente siguiendo estos pasos:
+Este proyecto es una herramienta de optimización personal. Para instalarla:
 
 1.  **Clona este repositorio:**
     ```bash
-    git clone [https://github.com/TU_USUARIO/movistar-enhancer.git](https://github.com/TU_USUARIO/movistar-enhancer.git)
+    git clone [https://github.com/TU_USUARIO/movplus-plus.git](https://github.com/TU_USUARIO/movplus-plus.git)
     ```
-2.  Abre **Chrome** y navega a `chrome://extensions/`.
-3.  Activa el **"Modo de desarrollador"** en la esquina superior derecha.
-4.  Haz clic en **"Cargar descomprimida"** y selecciona la carpeta donde clonaste el proyecto.
+2.  Abre Google Chrome y navega a `chrome://extensions/`.
+3.  Activa el interruptor **"Modo de desarrollador"** (arriba a la derecha).
+4.  Haz clic en **"Cargar descomprimida"** y selecciona la carpeta del proyecto.
+5.  Refresca la web de Movistar+ y disfruta.
 
 ---
 
 ## 🏗️ Arquitectura Técnica
 
-El proyecto utiliza un patrón de **Inyección de Scripts** en fase de captura para priorizar los eventos del usuario sobre los manejadores nativos de la web.
+Este proyecto resuelve desafíos complejos de la plataforma Movistar+ (basada en Shaka Player y protegida por SES Lockdown):
 
-* **`manifest.json`**: Configuración de permisos mínimos (Host Permissions) siguiendo la política de *Single Purpose* de Google.
-* **`content.js`**: Lógica principal con desacoplamiento entre el manejador de eventos y las acciones del hardware.
-* **Encapsulamiento**: Uso de **IIFE** (Immediately Invoked Function Expression) para proteger el scope global y evitar colisiones en entornos SES/Lockdown.
-
----
-
-## 🚧 Estado del Proyecto (WIP)
-
-- [x] Controles básicos de reproducción.
-- [x] OSD dinámico con Shadow DOM.
-- [ ] **TODO:** Mejorar la resiliencia de la tecla `C` (subtítulos) tras cambios de bitrate en Shaka Player.
-- [ ] **TODO:** Persistencia de volumen mediante `chrome.storage`.
-
----
-
-## 📄 Licencia
-
-Este proyecto es de código abierto bajo la licencia **MIT**.
+### 1. Inyección en "Main World" (Manifest V3)
+En lugar de luchar contra el *Isolated World* de las extensiones, configuramos el `manifest.json` para ejecutar `content.js` en el contexto principal:
+```json
+"world": "MAIN"
