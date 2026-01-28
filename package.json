@@ -17,8 +17,9 @@
   "scripts": {
     "lint": "eslint .",
     "fix": "eslint . --fix",
-    "build": "bestzip movplus-release.zip * -x { .git/ node_modules/ .idea/ package*.json *.config.mjs"  },
-  "keywords": [
+    "build": "bestzip movplus-release.zip manifest.json content.js icons/* README.md LICENSE"
+  },
+    "keywords": [
     "movistar",
     "plus",
     "extension",
