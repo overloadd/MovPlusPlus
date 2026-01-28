@@ -58,3 +58,9 @@ Este proyecto resuelve desafíos complejos de la plataforma Movistar+ (basada en
 En lugar de luchar contra el *Isolated World* de las extensiones, configuramos el `manifest.json` para ejecutar `content.js` en el contexto principal:
 ```json
 "world": "MAIN"
+```
+## Apoya el Proyecto
+
+Si esta extensión mejora tu experiencia diaria, considera invitarme a un café para mantener las actualizaciones:
+
+[![Donate with PayPal](https://img.shields.io/badge/Donate-PayPal-blue.svg?logo=paypal&style=for-the-badge)](https://www.paypal.com/donate/?hosted_button_id=BSBVZ96SC4HQU)
