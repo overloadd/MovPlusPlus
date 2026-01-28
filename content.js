@@ -1,17 +1,18 @@
+/**
+ * Movistar+ Keyboard Controller v1.3
+ * Ejecutando en MAIN WORLD (Acceso directo a window.shakaPlayer y yomvi)
+ */
 (function() {
 	"use strict";
 
 	const CONFIG = {
 		SEEK_TIME: 15,
 		VOL_STEP: 0.05,
-		THROTTLE_MS: 150,
-		SELECTORS: {
-			video: ["#player_mid_roll", "#player-multidrm", "video"],
-			container: "objetoPlayer" // Clase en el html/body
-		}
+		// Selectores ordenados por prioridad
+		SELECTORS: ["#player-multidrm", "#player_mid_roll", "video"]
 	};
 
-	// --- MINI OSD (Encapsulado para evitar SES/Lockdown) ---
+	// --- OSD (Visual Feedback) ---
 	const showOSD = (() => {
 		const id = "movistar-enhancer-osd";
 		return (text) => {
@@ -20,196 +21,169 @@
 				el = document.createElement("div");
 				el.id = id;
 				Object.assign(el.style, {
-					position: "fixed", top: "10%", left: "50%", transform: "translateX(-50%)",
-					background: "rgba(0,0,0,0.8)", color: "#00ffed", padding: "12px 24px",
-					borderRadius: "30px", zIndex: "999999", pointerEvents: "none",
-					fontFamily: "sans-serif", fontWeight: "bold", border: "1px solid #00ffed"
+					position: "fixed", top: "12%", left: "50%", transform: "translateX(-50%)",
+					background: "rgba(16, 16, 16, 0.95)", color: "#00ffed", padding: "14px 30px",
+					borderRadius: "50px", zIndex: "2147483647", pointerEvents: "none",
+					fontFamily: "'Segoe UI', system-ui, sans-serif", fontWeight: "700", letterSpacing: "0.5px",
+					border: "2px solid #00ffed", transition: "opacity 0.2s ease, transform 0.2s ease",
+					fontSize: "20px", textAlign: "center", boxShadow: "0 8px 32px rgba(0,255,237,0.2)"
 				});
 				document.body.appendChild(el);
 			}
 			el.textContent = text;
 			el.style.opacity = "1";
+			el.style.transform = "translateX(-50%) scale(1.05)";
 			clearTimeout(el.timer);
-			el.timer = setTimeout(() => el.style.opacity = "0", 1000);
+			el.timer = setTimeout(() => {
+				el.style.opacity = "0";
+				el.style.transform = "translateX(-50%) scale(1)";
+			}, 1500);
 		};
 	})();
 
-	const getShaka = () => {
-		// Shaka suele estar enterrado en el objeto de la web o el video, se llama al reproductor de yomvi
-		return window.yomvi?.player?.getPlayer?.() || null;
-	};
-
-	const getYomviPlayer = () => {
-		return window.yomvi?.player?.() || null;
-	};
+	// Acceso directo gracias a "world": "MAIN"
+	const getPlayer = () => window.shakaPlayer || window.yomvi?.player?.getPlayer?.();
 
 	const getVideo = () => {
-		for (const s of CONFIG.SELECTORS.video) {
-			const el = s.startsWith("#") ? document.getElementById(s.slice(1)) : document.querySelector(s);
-			if (el) return el;
+		for (const selector of CONFIG.SELECTORS) {
+			const el = document.querySelector(selector);
+			if (el && el.tagName === "VIDEO") return el;
 		}
 		return null;
 	};
 
 	const handleKey = (e) => {
-		if (["INPUT", "TEXTAREA"].includes(document.activeElement?.tagName)) return;
+		// Ignorar si el usuario escribe en un input
+		if (["INPUT", "TEXTAREA"].includes(document.activeElement?.tagName) || document.activeElement?.isContentEditable) return;
 
 		const video = getVideo();
-		const shaka = getShaka() || null;
-		const yomvi = getYomviPlayer();
-		let audioTracks = [];
-		let subTracks = [];
-		if(shaka){
-			let audioList = shaka.getAudioLanguages();
-			for (let lang of audioList){
-				if(!lang) break;
-				audioTracks.add(lang);
-			}
-			let subLangs = shaka.getTextLanguages();
-			for (let lang of subLangs){
-				if (!lang) break;
-				subTracks.add(lang);
-			}
-		}
+		const player = getPlayer();
 
+		// Si no hay video, no hacemos nada
 		if (!video) return;
 
 		switch (e.code) {
 			case "Space":
 				e.preventDefault();
-				e.stopImmediatePropagation();
-				if (video.paused) { video.play(); showOSD("▶ PLAY"); }
-				else { video.pause(); showOSD("⏸ PAUSA"); }
+				e.stopPropagation(); // Evitar scroll nativo
+				video.paused ? video.play() : video.pause();
+				showOSD(video.paused ? "⏸ PAUSA" : "▶ REPRODUCIENDO");
 				break;
+
 			case "ArrowRight":
+				// Sin preventDefault para permitir navegación nativa si se prefiere, o agregar si molesta
 				video.currentTime += CONFIG.SEEK_TIME;
 				showOSD(`⏩ +${CONFIG.SEEK_TIME}s`);
 				break;
+
 			case "ArrowLeft":
 				video.currentTime -= CONFIG.SEEK_TIME;
 				showOSD(`⏪ -${CONFIG.SEEK_TIME}s`);
 				break;
-			case "ArrowUp":
-				video.volume = Math.min(1, video.volume + CONFIG.VOL_STEP);
-				showOSD(`🔊 ${Math.round(video.volume * 100)}%`);
-				break;
-			case "ArrowDown":
-				video.volume = Math.max(0, video.volume - CONFIG.VOL_STEP);
-				showOSD(`🔉 ${Math.round(video.volume * 100)}%`);
-				break;
-			case "KeyF":
-				if (!document.fullscreenElement) video.requestFullscreen();
-				else document.exitFullscreen();
-				break;
-				// Listar idiomas de subtítulos
-			case "KeyC": // Subtítulos (Específico para Shaka Player)
-				if (shaka) {
-					//let subTracks = yomvi.getTracks("text"); => shaka es mas fiable
-					let langList = "";
-					for (let lang of subTracks){
-						if (!lang) break;
-						langList += `⌨️SUB: ${lang.toUpperCase()}\n`;
-					}
-					langList === "" ? console.error("No hay idiomas para mostrar") : showOSD(langList);
-				} else {
-					console.error("Reproductor no encontrado");
-				}
-				break;
-				// Listar idiomas de audio
-			case "KeyA":
-				if (shaka) {
-					let audioLangList = "";
-					for (let lang of audioTracks){
-						if(!lang) break;
-						audioLangList += `🔊 AUDIO: ${lang.toUpperCase()}`;
-					}
-					audioLangList === "" ? console.error("No hay idiomas para mostrar") : showOSD(audioLangList);
-					break;
-				} else {
-					console.error("Reproductor no encontrado");
-					break;
-				}
-				// Cambiar idioma
-			case "KeyL":
-				e.preventDefault();
-				if (shaka){
-					if (audioTracks.length >= 1){
-						let currIndex = shaka.getVariantTracks().findIndex(track => track.active === true);
-						let audioLang = audioTracks[shaka.getVariantTracks()[currIndex].language];
-						let nextIndex = (currIndex + 1) % audioTracks.length;
-						const nextTrack = audioTracks[nextIndex]; // Siguiente idioma en string
-						console.log(`Cambiando a ${nextTrack}`);
-						showOSD(`🔊${audioLang.toUpperCase()} => 🔊 ${nextTrack.toUpperCase()}`);
-						shaka.selectAudioLanguage(nextTrack, true, 2);
-						break;
-					} else {
-						console.error("No hay idiomas para cambiar");
-						break;
-					}
-				} else {
-					console.error("Reproductor no encontrado");
-					break;
-				}
-				// Cambiar idioma de subtítulos
-			case "KeyS":
-				e.preventDefault();
-				if (shaka){
-					if (subTracks.length >= 1){
-						let currIndex = shaka.getTextTracks().findIndex(track => track.active === true);
-						let subsLang = subTracks[shaka.getTextTracks()[currIndex].language];
-						let nextIndex = (currIndex + 1) % subTracks.length;
-						const nextTrack = subTracks[nextIndex]; // Siguiente idioma en string
-						console.log(`Cambiando a ${nextTrack}`);
-						showOSD(`⌨️SUB: ${subsLang.toUpperCase()} => ⌨️SUB: ${nextTrack.toUpperCase()}`);
-						shaka.selectTextTrack(nextTrack, true, 2);
-						break;
-					} else {
-						console.error("No hay idiomas para cambiar");
-						break;
-					}
-				} else {
-					console.error("Reproductor no encontrado");
-					break;
-				}
 
-			case "KeyD":
+			case "ArrowUp":
 				e.preventDefault();
-				if (shaka) {
-					let visible = false;
-					shaka.setTextTrackVisibility(!visible);
-					visible = !visible;
-					showOSD(`MOSTRAR SUBTITULOS: ${visible === true ? "ON" : "OFF"}`);
-					break;
-				} else {
-					console.error("Reproductor no encontrado");
-					break;
-				}
+				video.volume = Math.min(1, video.volume + CONFIG.VOL_STEP);
+				showOSD(`🔊 VOLUMEN: ${Math.round(video.volume * 100)}%`);
+				break;
+
+			case "ArrowDown":
+				e.preventDefault();
+				video.volume = Math.max(0, video.volume - CONFIG.VOL_STEP);
+				showOSD(`🔉 VOLUMEN: ${Math.round(video.volume * 100)}%`);
+				break;
+
 			case "KeyM":
 				e.preventDefault();
 				video.muted = !video.muted;
-				// Feedback dinámico basado en el estado real del hardware
-				showOSD(video.muted ? "🔇 SILENCIO" : "🔊 SONIDO ON");
+				showOSD(video.muted ? "🔇 SILENCIO" : "🔊 SONIDO ACTIVADO");
 				break;
-			default:
-				return;
+
+			case "KeyF":
+				e.preventDefault();
+				if (!document.fullscreenElement) {
+					const container = video.closest(".objetoPlayer") || video.parentElement;
+					(container?.requestFullscreen ? container : video).requestFullscreen().catch(err => console.log(err));
+				} else {
+					document.exitFullscreen();
+				}
+				break;
+
+			case "KeyL": // CAMBIO DE AUDIO (Fix ABR incluido)
+				if (player) {
+					e.preventDefault();
+					try {
+						const tracks = player.getVariantTracks();
+						// Filtrar variantes de audio únicas
+						const langs = [...new Set(tracks.filter(t => t.language).map(t => t.language))];
+
+						if (langs.length > 1) {
+							// Encontrar idioma actual buscando la pista activa
+							const activeTrack = tracks.find(t => t.active);
+							const currentLang = activeTrack ? activeTrack.language : langs[0];
+
+							const nextIndex = (langs.indexOf(currentLang) + 1) % langs.length;
+							const nextLang = langs[nextIndex];
+
+							console.log(`MovPlus++: Cambiando audio de ${currentLang} a ${nextLang}`);
+
+							// Fix Crítico: Desactivar ABR para evitar que Shaka revierta el cambio
+							const config = player.getConfiguration();
+							if (config.abr.enabled) {
+								player.configure({ abr: { enabled: false } });
+							}
+
+							player.selectAudioLanguage(nextLang);
+							showOSD(`🔊 AUDIO: ${nextLang.toUpperCase()}`);
+						} else {
+							showOSD("🔊 SOLO 1 IDIOMA DISPONIBLE");
+						}
+					} catch (err) {
+						console.error("MovPlus++ Error Audio:", err);
+					}
+				}
+				break;
+
+			case "KeyC": // CAMBIO DE SUBTÍTULOS
+				if (player) {
+					e.preventDefault();
+					try {
+						const textTracks = player.getTextTracks();
+						if (textTracks.length === 0) {
+							showOSD("🚫 SIN SUBTÍTULOS");
+							return;
+						}
+
+						if (!player.isTextTrackVisible()) {
+							// Paso 1: Activar el primero
+							player.setTextTrackVisibility(true);
+							player.selectTextTrack(textTracks[0]);
+							showOSD(`💬 SUBS: ${textTracks[0].language.toUpperCase()}`);
+						} else {
+							// Paso 2: Rotar o Apagar
+							const currentTrack = textTracks.find(t => t.active);
+							const currIdx = textTracks.indexOf(currentTrack);
+							const nextIdx = currIdx + 1;
+
+							if (nextIdx >= textTracks.length) {
+								player.setTextTrackVisibility(false);
+								showOSD("💬 SUBS: OFF");
+							} else {
+								player.selectTextTrack(textTracks[nextIdx]);
+								showOSD(`💬 SUBS: ${textTracks[nextIdx].language.toUpperCase()}`);
+							}
+						}
+					} catch (err) {
+						console.error("MovPlus++ Error Subs:", err);
+					}
+				}
+				break;
 		}
 	};
 
-	// Usamos el 'true' para saltarnos el sandboxing del Lockdown de la web
-	document.addEventListener("keydown", handleKey, true);
-	console.log("✅ Movistar Enhancer inyectado (Shaka Player Detected)");
-})();
+	// Usamos 'true' para fase de captura, asegurando prioridad sobre los eventos de la web
+	window.addEventListener("keydown", handleKey, true);
 
-/**
- * yomvi.player.getPlayer().selectAudioLanguage("qaa", yomvi.player.getTracks('audio'), true);
- * qaa stands for english?
- * let subTracks = yomvi.player.getTracks('text');
- * for (let i = 0 ; i < subTracks.length ; i++){
- *     console.log(tracks[i].language);
- * };
- * let audioTracks = yomvi.player.getTracks('audio');
- * for (let i = 0 ; i < audioTracks.length ; i++){
- *     console.log(tracks[i].language);
- * };
- * TODO: Testear las nuevas fxs y modificar README.md para mostrarlas
- */
+	console.log("🚀 MovPlus++ Cargado.");
+
+})();

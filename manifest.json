@@ -1,20 +1,23 @@
 {
     "manifest_version": 3,
-    "name": "Movistar+ Enhancer Pro",
-    "version": "1.0",
-    "description": "Control total de teclado para Movistar Plus",
+    "name": "Movistar+ Keyboard Controller",
+    "version": "1.3",
+    "permissions": ["storage"],
+    "host_permissions": ["*://ver.movistarplus.es/*"],
     "content_scripts": [
         {
             "matches": ["*://ver.movistarplus.es/*"],
             "js": ["content.js"],
             "run_at": "document_start",
-            "all_frames": true
+            "world": "MAIN"
         }
+
+        
     ],
-    "permissions": ["storage"],
-    "icons": {
-        "16": "icons/icon16.png",
-        "48": "icons/icon48.png",
-        "128": "icons/icon128.png"
-    }
+  "icons": {
+    "16": "icons/icon16.png",
+    "32": "icons/icon32.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  }
 }
