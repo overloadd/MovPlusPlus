@@ -5,13 +5,29 @@
 (function() {
 	"use strict";
 
-	const CONFIG = {
+	let CONFIG = {
 		SEEK_TIME: 15,
 		VOL_STEP: 0.05,
 		// Selectores ordenados por prioridad
-		SELECTORS: ["#player-multidrm", "#player_mid_roll", "video"]
+		SELECTORS: ["#player-multidrm", "#player_mid_roll", "video"],
+		keys: {
+			play: "Space", forward: "ArrowRight", rewind: "ArrowLeft",
+			volUp: "ArrowUp", volDown: "ArrowDown", mute: "KeyM",
+			audio: "KeyL", subs: "KeyC", fullscreen: "KeyF"
+		}
 	};
+	let keyActionMap = {};
 
+	window.addEventListener("message", (event) => {
+		if (event.data.type === "MOVPLUS_INIT_CONFIG" || event.data.type === "MOVPLUS_UPDATE_CONFIG"){
+			CONFIG = event.data.payload;
+			keyActionMap = {};
+			for (const [action, code] of Object.entries(CONFIG.keys)){
+				keyActionMap[code] = action;
+			}
+			console.log("Configuracion actualizada.");
+		}
+	});
 	// --- OSD (Visual Feedback) ---
 	const showOSD = (() => {
 		const id = "movistar-enhancer-osd";
@@ -61,45 +77,46 @@
 
 		// Si no hay video, no hacemos nada
 		if (!video) return;
-
-		switch (e.code) {
-			case "Space":
+		const action = keyActionMap[e.code];
+		if (!action) return;
+		switch (action) {
+			case "play":
 				e.preventDefault();
 				e.stopPropagation(); // Evitar scroll nativo
 				video.paused ? video.play() : video.pause();
 				showOSD(video.paused ? "⏸ PAUSA" : "▶ REPRODUCIENDO");
 				break;
 
-			case "ArrowRight":
+			case "next":
 				// Sin preventDefault para permitir navegación nativa si se prefiere, o agregar si molesta
 				video.currentTime += CONFIG.SEEK_TIME;
 				showOSD(`⏩ +${CONFIG.SEEK_TIME}s`);
 				break;
 
-			case "ArrowLeft":
+			case "rewind":
 				video.currentTime -= CONFIG.SEEK_TIME;
 				showOSD(`⏪ -${CONFIG.SEEK_TIME}s`);
 				break;
 
-			case "ArrowUp":
+			case "volUp":
 				e.preventDefault();
 				video.volume = Math.min(1, video.volume + CONFIG.VOL_STEP);
 				showOSD(`🔊 VOLUMEN: ${Math.round(video.volume * 100)}%`);
 				break;
 
-			case "ArrowDown":
+			case "volDown":
 				e.preventDefault();
 				video.volume = Math.max(0, video.volume - CONFIG.VOL_STEP);
 				showOSD(`🔉 VOLUMEN: ${Math.round(video.volume * 100)}%`);
 				break;
 
-			case "KeyM":
+			case "mute":
 				e.preventDefault();
 				video.muted = !video.muted;
 				showOSD(video.muted ? "🔇 SILENCIO" : "🔊 SONIDO ACTIVADO");
 				break;
 
-			case "KeyF":
+			case "fullscreen":
 				e.preventDefault();
 				if (!document.fullscreenElement) {
 					const container = video.closest(".objetoPlayer") || video.parentElement;
@@ -109,7 +126,7 @@
 				}
 				break;
 
-			case "KeyL": // CAMBIO DE AUDIO (Fix ABR incluido)
+			case "audio": // CAMBIO DE AUDIO (Fix ABR incluido)
 				if (player) {
 					e.preventDefault();
 					try {
@@ -144,7 +161,7 @@
 				}
 				break;
 
-			case "KeyC": // CAMBIO DE SUBTÍTULOS
+			case "subs": // CAMBIO DE SUBTÍTULOS
 				if (player) {
 					e.preventDefault();
 					try {
